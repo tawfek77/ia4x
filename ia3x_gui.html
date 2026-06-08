@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NullNext ia3x Compatible UI</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: transparent; overflow: hidden; color: #fff; user-select: none; }
+        
+        #menu-container {
+            position: absolute; top: 10%; right: 5%;
+            width: 320px; background: rgba(15, 15, 18, 0.95);
+            border: 1px solid rgba(255,255,255,0.05); border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(255, 42, 85, 0.2);
+            display: none; flex-direction: column; overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Header & Tabs */
+        .header { background: #ff2a55; padding: 15px; text-align: center; font-weight: 800; font-size: 20px; letter-spacing: 1px; }
+        .tabs { display: flex; overflow-x: hidden; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .tab { flex: 1; padding: 10px; text-align: center; font-size: 12px; color: #888; font-weight: 600; white-space: nowrap; }
+        .tab.active { color: #fff; border-bottom: 2px solid #ff2a55; background: rgba(255, 42, 85, 0.1); }
+        
+        /* Items */
+        .items-list { max-height: 400px; overflow-y: auto; padding: 10px 0; }
+        .item { padding: 12px 20px; font-size: 14px; color: #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .item.active { background: rgba(255, 42, 85, 0.2); color: #fff; border-left: 3px solid #ff2a55; }
+        
+        /* Notifications */
+        #notification-container {
+            position: absolute; bottom: 5%; left: 5%; display: flex; flex-direction: column; gap: 10px;
+        }
+        .notification {
+            background: rgba(15, 15, 18, 0.9); border-left: 4px solid #ff2a55;
+            padding: 15px 20px; border-radius: 6px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        }
+        .notif-title { font-weight: 800; font-size: 14px; color: #ff2a55; margin-bottom: 5px; }
+        .notif-msg { font-size: 12px; color: #ccc; }
+        
+        @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div id="menu-container">
+        <div class="header">NULLNEXT</div>
+        <div class="tabs" id="tabs-container"></div>
+        <div class="items-list" id="items-container"></div>
+    </div>
+    
+    <div id="notification-container"></div>
+
+    <script>
+        const menu = document.getElementById('menu-container');
+        const tabsContainer = document.getElementById('tabs-container');
+        const itemsContainer = document.getElementById('items-container');
+        const notifContainer = document.getElementById('notification-container');
+        
+        let currentTabs = [];
+        let currentItems = [];
+        let activeTabIndex = 0;
+        let activeItemIndex = 0;
+
+        function renderTabs() {
+            tabsContainer.innerHTML = '';
+            currentTabs.forEach((t, i) => {
+                const el = document.createElement('div');
+                el.className = `tab ${i === activeTabIndex ? 'active' : ''}`;
+                el.innerText = t;
+                tabsContainer.appendChild(el);
+            });
+            // Auto scroll to active tab
+            const activeEl = tabsContainer.querySelector('.active');
+            if(activeEl) activeEl.scrollIntoView({ inline: 'center', behavior: 'smooth' });
+        }
+
+        function renderItems() {
+            itemsContainer.innerHTML = '';
+            currentItems.forEach((item, i) => {
+                const el = document.createElement('div');
+                el.className = `item ${i === activeItemIndex ? 'active' : ''}`;
+                // Support strings or objects
+                el.innerText = typeof item === 'string' ? item : (item.name || item.label || 'Unknown');
+                itemsContainer.appendChild(el);
+            });
+            // Auto scroll to active item
+            const activeEl = itemsContainer.querySelector('.active');
+            if(activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+        }
+
+        function showNotification(title, msg) {
+            const el = document.createElement('div');
+            el.className = 'notification';
+            el.innerHTML = `<div class="notif-title">${title}</div><div class="notif-msg">${msg}</div>`;
+            notifContainer.appendChild(el);
+            setTimeout(() => { el.remove(); }, 4000);
+        }
+
+        window.addEventListener('message', (event) => {
+            const data = event.data;
+            if (!data) return;
+
+            // Handle strings (if it parses as json)
+            let payload = data;
+            if (typeof data === 'string') {
+                try { payload = JSON.parse(data); } catch(e) {}
+            }
+
+            switch(payload.action) {
+                case 'setVisible':
+                    menu.style.display = payload.visible ? 'flex' : 'none';
+                    break;
+                case 'setTabs':
+                    currentTabs = payload.tabs || [];
+                    renderTabs();
+                    break;
+                case 'setTabIndex':
+                    activeTabIndex = payload.index || 0;
+                    renderTabs();
+                    break;
+                case 'setMenu':
+                    currentItems = payload.menu || [];
+                    renderItems();
+                    break;
+                case 'setIndex':
+                    activeItemIndex = payload.index || 0;
+                    renderItems();
+                    break;
+                case 'showNotification':
+                    showNotification(payload.title || 'Notification', payload.message || '');
+                    break;
+                case 'updatePlayerInfo':
+                    // Just showing as a notification for now
+                    showNotification("Player Info", `Viewing: ${payload.playerName || 'Unknown'}`);
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>
