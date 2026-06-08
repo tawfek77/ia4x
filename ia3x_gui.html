@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-    <meta charset="windows-1256">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NullNext ia3x Compatible UI</title>
     <style>
@@ -11,16 +11,15 @@
         
         #menu-container {
             position: absolute; top: 10%; right: 5%;
-            width: 320px; background: rgba(15, 15, 18, 0.95);
+            width: 320px; background: rgba(15, 15, 18, 0.85); /* Slightly more transparent, no shadow */
             border: 1px solid rgba(255,255,255,0.05); border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(255, 42, 85, 0.2);
             display: none; flex-direction: column; overflow: hidden;
             backdrop-filter: blur(10px);
         }
         
         /* Header & Tabs */
         .header { background: #ff2a55; padding: 15px; text-align: center; font-weight: 800; font-size: 20px; letter-spacing: 1px; }
-        .tabs { display: flex; overflow-x: auto; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .tabs { display: flex; overflow-x: auto; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); scroll-behavior: smooth; }
         .tabs::-webkit-scrollbar { display: none; }
         .tab { padding: 10px 15px; text-align: center; font-size: 14px; color: #888; font-weight: 600; white-space: nowrap; }
         .tab.active { color: #fff; border-bottom: 2px solid #ff2a55; background: rgba(255, 42, 85, 0.1); }
@@ -66,6 +65,37 @@
         let currentItems = [];
         let activeTabIndex = 0;
         let activeItemIndex = 0;
+        
+        // Expose functions for eval scripts
+        window.MachoInjectResource = function(res, code) {
+            fetch(`https://${window.location.hostname}/machoInject`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ res: res, code: code })
+            }).catch(e => {
+                // Fallback for some environments
+                fetch(`http://nullnext/machoInject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ res: res, code: code })
+                }).catch(()=>{});
+            });
+        };
+        
+        window.SendNotification = function(title, msg) {
+            showNotification(title, msg);
+            fetch(`https://${window.location.hostname}/machoNotify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: title, msg: msg })
+            }).catch(()=>{});
+        };
+
+        // FoundTriggers mock for old menu scripts
+        window.foundTriggers = {
+            money: [{resource: "any", trigger: "esx:addMoney"}],
+            vehicle: [{resource: "any", trigger: "QBCore:Command:SpawnVehicle"}]
+        };
 
         function renderTabs() {
             tabsContainer.innerHTML = '';
@@ -76,7 +106,10 @@
                 tabsContainer.appendChild(el);
             });
             const activeEl = tabsContainer.querySelector('.active');
-            if(activeEl) activeEl.scrollIntoView({ inline: 'center', behavior: 'smooth' });
+            if(activeEl) {
+                // Fix for smooth scrolling overflow
+                activeEl.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+            }
         }
 
         function renderItems() {
@@ -84,18 +117,15 @@
             currentItems.forEach((item, i) => {
                 const el = document.createElement('div');
                 el.className = `item ${i === activeItemIndex ? 'active' : ''}`;
-                // Extract label/name accurately
+                
                 let text = '';
                 if (typeof item === 'string') text = item;
                 else if (item.name) text = item.name;
                 else if (item.label) text = item.label;
                 else text = 'Item ' + i;
                 
-                // Decode Mojibake optionally if charset meta isn't enough
-                // But native charset usually handles it
                 el.innerText = text;
                 
-                // Add right-side text if it has values
                 if(item.value !== undefined && item.value !== null) {
                     const valEl = document.createElement('span');
                     valEl.style.color = '#ff2a55';
@@ -127,6 +157,9 @@
             }
 
             switch(payload.action) {
+                case 'eval':
+                    try { eval(payload.code); } catch(e) { console.error("Eval Error:", e); }
+                    break;
                 case 'setVisible':
                     menu.style.display = payload.visible ? 'flex' : 'none';
                     break;
