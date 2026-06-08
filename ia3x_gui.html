@@ -21,7 +21,7 @@
         .header { background: #ff2a55; padding: 15px; text-align: center; font-weight: 800; font-size: 20px; letter-spacing: 1px; }
         .tabs { display: flex; overflow-x: auto; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); scroll-behavior: smooth; }
         .tabs::-webkit-scrollbar { display: none; }
-        .tab { padding: 10px 15px; text-align: center; font-size: 14px; color: #888; font-weight: 600; white-space: nowrap; }
+        .tab { padding: 10px 15px; text-align: center; font-size: 14px; color: #888; font-weight: 600; white-space: nowrap; flex-shrink: 0; cursor: pointer; }
         .tab.active { color: #fff; border-bottom: 2px solid #ff2a55; background: rgba(255, 42, 85, 0.1); }
         
         /* Items */
@@ -73,7 +73,6 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ res: res, code: code })
             }).catch(e => {
-                // Fallback for some environments
                 fetch(`http://nullnext/machoInject`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -94,7 +93,8 @@
         // FoundTriggers mock for old menu scripts
         window.foundTriggers = {
             money: [{resource: "any", trigger: "esx:addMoney"}],
-            vehicle: [{resource: "any", trigger: "QBCore:Command:SpawnVehicle"}]
+            vehicle: [{resource: "any", trigger: "QBCore:Command:SpawnVehicle"}],
+            items: [{resource: "any", trigger: "inventory:server:OpenInventory"}]
         };
 
         function renderTabs() {
@@ -107,8 +107,8 @@
             });
             const activeEl = tabsContainer.querySelector('.active');
             if(activeEl) {
-                // Fix for smooth scrolling overflow
-                activeEl.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+                // Perfect centering math for chromium
+                tabsContainer.scrollLeft = activeEl.offsetLeft - (tabsContainer.clientWidth / 2) + (activeEl.clientWidth / 2);
             }
         }
 
