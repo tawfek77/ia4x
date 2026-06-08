@@ -3,22 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NullNext</title>
+    <title>NULLNEXT</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
-        html, body { background: transparent !important; background-color: rgba(0,0,0,0) !important; overflow: hidden; color: #fff; user-select: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: 'Cairo', sans-serif; }
+        body { 
+            background: transparent !important; 
+            background-color: rgba(0,0,0,0) !important; 
+            overflow: hidden; 
+            color: #fff;
+            direction: rtl;
+        }
         
         #menu-container {
             position: absolute; top: 10%; right: 5%;
-            width: 320px; background: rgba(15, 15, 18, 0.85); /* Slightly more transparent, no shadow */
-            border: 1px solid rgba(255,255,255,0.05); border-radius: 12px;
-            display: none; flex-direction: column; overflow: hidden;
+            width: 350px; background: rgba(15, 15, 18, 0.85); 
+            border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);
             backdrop-filter: blur(10px);
         }
         
-        /* Header & Tabs */
         .header { background: #ff2a55; padding: 15px; text-align: center; font-weight: 800; font-size: 20px; letter-spacing: 1px; }
+        .discord-link { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 2px; font-weight: 600; letter-spacing: 0.5px; }
+        
         .tabs { display: flex; overflow-x: auto; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); scroll-behavior: smooth; }
         .tabs::-webkit-scrollbar { display: none; }
         .tab { padding: 10px 15px; text-align: center; font-size: 14px; color: #888; font-weight: 600; white-space: nowrap; flex-shrink: 0; cursor: pointer; }
@@ -29,7 +37,7 @@
         .items-list::-webkit-scrollbar { width: 5px; }
         .items-list::-webkit-scrollbar-thumb { background: #ff2a55; border-radius: 5px; }
         .item { padding: 12px 20px; font-size: 14px; color: #ddd; display: flex; justify-content: space-between; align-items: center; }
-        .item.active { background: rgba(255, 42, 85, 0.2); color: #fff; border-left: 3px solid #ff2a55; font-weight: 600; }
+        .item.active { background: rgba(255, 42, 85, 0.2); color: #fff; border-right: 3px solid #ff2a55; font-weight: 600; }
         
         /* Notifications */
         #notification-container {
@@ -37,7 +45,7 @@
         }
         .notification {
             background: rgba(15, 15, 18, 0.9); border-left: 4px solid #ff2a55;
-            padding: 15px 20px; border-radius: 6px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            padding: 15px 20px; border-radius: 6px; box-shadow: none;
             animation: slideIn 0.3s ease;
         }
         .notif-title { font-weight: 800; font-size: 14px; color: #ff2a55; margin-bottom: 5px; }
@@ -48,7 +56,10 @@
 </head>
 <body>
     <div id="menu-container">
-        <div class="header">NULLNEXT</div>
+        <div class="header">
+            NULLNEXT
+            <div class="discord-link">discord.gg/rra</div>
+        </div>
         <div class="tabs" id="tabs-container"></div>
         <div class="items-list" id="items-container"></div>
     </div>
